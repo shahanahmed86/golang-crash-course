@@ -40,7 +40,6 @@ func main() {
 
 func checkNilErr(err error) {
 	if err != nil {
-		fmt.Println("Server is about to panic")
 		panic(err)
 	}
 }
