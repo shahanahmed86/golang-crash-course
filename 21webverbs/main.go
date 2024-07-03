@@ -4,16 +4,44 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 func main() {
 	fmt.Println("Welcome to web verbs in golang")
-	PerformGetRequest("/get")
-	PerformPostJsonRequest("/post")
+	// PerformGetRequest("/get")
+	// PerformPostJsonRequest("/post")
+	PerformPostFormRequest("/post-form")
 }
 
 const baseUrl string = "http://localhost:3000"
+
+func PerformPostFormRequest(route string) {
+	myUrl := baseUrl + route
+
+	data := url.Values{}
+
+	data.Add("firstname", "shahan ahmed")
+	data.Add("lastname", "khan")
+	data.Add("email", "shahan.khan.gmail.com")
+
+	resp, err := http.PostForm(myUrl, data)
+	checkNilErr(err)
+
+	defer resp.Body.Close()
+
+	var responseString strings.Builder
+	content, contentErr := io.ReadAll(resp.Body)
+	checkNilErr(contentErr)
+
+	responseString.Write(content)
+
+	fmt.Println("Status code is:", resp.StatusCode)
+	fmt.Println("Content length is:", resp.ContentLength)
+
+	fmt.Println("Data inside the response is:", responseString.String())
+}
 
 func PerformPostJsonRequest(route string) {
 	myUrl := baseUrl + route
