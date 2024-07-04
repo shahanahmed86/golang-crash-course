@@ -1,0 +1,56 @@
+name: golang-dev
+
+services:
+  db:
+    image: mongo:4.4
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_DATABASE=netflix
+      - MONGO_USERNAME=admin
+      - MONGO_PASSWORD=lmelg8
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+    volumes:
+      - db_dev:/data/db
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+    logging:
+      options:
+        max-size: 512m
+
+  db-gui:
+    image: mongo-express:0.54.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 8080:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:lmelg8@db:27017/netflix
+    links:
+      - db:mongo
+    networks:
+      - app
+    logging:
+      options:
+        max-size: 512m
+
+volumes:
+  db_dev:
+    driver: local
+
+networks:
+  app:
+    driver: bridge
